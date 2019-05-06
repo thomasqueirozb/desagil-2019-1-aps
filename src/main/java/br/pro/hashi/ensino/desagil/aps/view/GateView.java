@@ -20,7 +20,7 @@ public class GateView extends FixedPanel implements ItemListener {
     private final Switch[] switches;
     private final Gate gate;
     private final JCheckBox[] inputBoxes;
-    private final JCheckBox outputBox;
+    private final JCheckBox[] outputBoxes;
     private final Image image;
 
     public GateView(Gate gate) {
@@ -29,6 +29,7 @@ public class GateView extends FixedPanel implements ItemListener {
         this.gate = gate;
 
         int inputSize = gate.getInputSize();
+        int outputSize = gate.getOutputSize();
 
         switches = new Switch[inputSize];
         inputBoxes = new JCheckBox[inputSize];
@@ -40,8 +41,6 @@ public class GateView extends FixedPanel implements ItemListener {
             gate.connect(i, switches[i]);
         }
 
-        outputBox = new JCheckBox();
-
         int x, y, step;
 
         x = BORDER;
@@ -52,7 +51,19 @@ public class GateView extends FixedPanel implements ItemListener {
             add(inputBox, x, y, SWITCH_SIZE, SWITCH_SIZE);
         }
 
-        add(outputBox, BORDER + SWITCH_SIZE + GATE_WIDTH, (GATE_HEIGHT - SWITCH_SIZE) / 2, SWITCH_SIZE, SWITCH_SIZE);
+        outputBoxes = new JCheckBox[outputSize];
+        for (int i = 0; i < outputSize; i++) {
+            outputBoxes[i] = new JCheckBox();
+            outputBoxes[i].setEnabled(false);
+        }
+
+        int x_ = BORDER + SWITCH_SIZE + GATE_WIDTH;
+        int y_ = -(SWITCH_SIZE / 2);
+        int step_ = (GATE_HEIGHT / (outputSize + 1));
+        for (JCheckBox outputBox : outputBoxes) {
+            y_ += step_;
+            add(outputBox, x_, y_, SWITCH_SIZE, SWITCH_SIZE);
+        }
 
         String name = gate.toString() + ".png";
         URL url = getClass().getClassLoader().getResource(name);
@@ -62,7 +73,6 @@ public class GateView extends FixedPanel implements ItemListener {
             inputBox.addItemListener(this);
         }
 
-        outputBox.setEnabled(false);
 
         update();
     }
@@ -76,9 +86,10 @@ public class GateView extends FixedPanel implements ItemListener {
             }
         }
 
-        boolean result = gate.read();
-
-        outputBox.setSelected(result);
+        for (int i=0; i<outputBoxes.length; i++){
+            boolean result = gate.read(i);
+            outputBoxes[i].setSelected(result);
+        }
     }
 
     @Override
